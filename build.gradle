@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'org.uniqueapps'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+application {
+    applicationName = "Navix Browser"
+    mainClassName = "com.uniqueapps.NavixBrowser.Main"
+}
+
+dependencies {
+    implementation 'com.formdev:flatlaf:2.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    implementation name: "jogl-all"
+    implementation name: "gluegen-rt"
+    implementation name: "jcef"
+    implementation name: "gluegen-rt-natives-linux-amd64"
+    implementation name: "jogl-all-natives-linux-amd64"
+    implementation name: "image4j-0.7.2"
+}
+
+test {
+    useJUnitPlatform()
+}
