@@ -4,10 +4,10 @@ import org.cef.OS;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 
-public class NavixComponentListener implements ComponentListener {
+public class NavixComponentListener extends ComponentAdapter {
 
     JFrame windowFrame;
     JTabbedPane tabbedPane;
@@ -23,20 +23,5 @@ public class NavixComponentListener implements ComponentListener {
             windowFrame.getContentPane().remove(tabbedPane);
             windowFrame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
         }
-    }
-
-    @Override
-    public void componentMoved(ComponentEvent componentEvent) {
-
-    }
-
-    @Override
-    public void componentShown(ComponentEvent componentEvent) {
-
-    }
-
-    @Override
-    public void componentHidden(ComponentEvent componentEvent) {
-
     }
 }

@@ -1,9 +1,10 @@
 package com.uniqueapps.NavixBrowser;
 
-import net.sf.image4j.codec.ico.ICODecoder;
+import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.browser.CefBrowser;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,12 +16,14 @@ import java.util.Map;
 public class BrowserTabbedPane extends JTabbedPane {
 
     public boolean workingOnTabs = false;
-    protected Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
-    private final BufferedImage newTabFavicon = ICODecoder.read(new URL("https://google.com/favicon.ico").openStream()).get(0);
-    private final BrowserWindow window;
+    public Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
+    private final BufferedImage newTabFavicon = ImageIO.read(new URL("https://www.google.com/s2/favicons?domain=google.com"));
+    private final JFrame windowFrame;
+    private final CefApp cefApp;
 
-    public BrowserTabbedPane(BrowserWindow window) throws IOException {
-        this.window = window;
+    public BrowserTabbedPane(JFrame windowFrame, CefApp cefApp) throws IOException {
+        this.windowFrame = windowFrame;
+        this.cefApp = cefApp;
     }
 
     public void addBrowserTab(CefClient cefClient, String startURL, boolean useOSR, boolean isTransparent) {
@@ -40,7 +43,15 @@ public class BrowserTabbedPane extends JTabbedPane {
         tabPanel.add(new JLabel("New Tab"));
         JButton closeTabButton = new JButton("X");
         int thisIndex = getTabCount() - 2;
-        closeTabButton.addActionListener(l -> removeTabAt(thisIndex));
+        closeTabButton.addActionListener(l -> {
+            if (getTabCount() > 2) {
+                removeBrowserTab(thisIndex);
+            } else {
+                windowFrame.setVisible(false);
+                cefApp.dispose();
+                windowFrame.dispose();
+            }
+        });
         tabPanel.add(closeTabButton);
         setTabComponentAt(getTabCount() - 2, tabPanel);
         setSelectedIndex(getTabCount() - 2);

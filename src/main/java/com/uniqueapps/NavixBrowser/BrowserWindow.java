@@ -1,8 +1,6 @@
 package com.uniqueapps.NavixBrowser;
 
-import com.uniqueapps.NavixBrowser.handler.NavixDisplayHandler;
-import com.uniqueapps.NavixBrowser.handler.NavixDownloadHandler;
-import com.uniqueapps.NavixBrowser.handler.NavixLoadHandler;
+import com.uniqueapps.NavixBrowser.handler.*;
 import com.uniqueapps.NavixBrowser.listener.NavixComponentListener;
 import com.uniqueapps.NavixBrowser.listener.NavixWindowListener;
 import org.cef.CefApp;
@@ -13,6 +11,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -33,15 +33,24 @@ public class BrowserWindow extends JFrame {
     private final JButton forwardNav;
     private final JButton backwardNav;
     private final JButton reloadButton;
-    private final BrowserTabbedPane tabbedPane = new BrowserTabbedPane(this);
+    private final BrowserTabbedPane tabbedPane;
+    public boolean browserIsInFocus = false;
+    private final JPanel browserGlassPane = new JPanel() {
+        {
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+
+        }
+    };
 
     BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) throws IOException {
+        CefApp.addAppHandler(new NavixAppHandler(null));
         CefApp.startup(new String[]{
                 "--disable-features=IsolateOrigins,site-per-process",
                 "--disable-gpu",
                 "--disable-software-rasterizer"});
-
-        setLayout(new BorderLayout(4, 4));
 
         CefSettings cefSettings = new CefSettings();
         cefSettings.windowless_rendering_enabled = useOSR;
@@ -52,6 +61,8 @@ public class BrowserWindow extends JFrame {
         cefSettings.cache_path = file.getAbsolutePath();
         cefApp = CefApp.getInstance(cefSettings);
         cefClient = cefApp.createClient();
+
+        tabbedPane = new BrowserTabbedPane(this, cefApp);
 
         browserAddressField = new JTextField(startURL, 100) {
             @Override
@@ -92,9 +103,11 @@ public class BrowserWindow extends JFrame {
     }
 
     private void addCefHandlers() {
+        cefClient.addDialogHandler(new NavixDialogHandler(this));
         cefClient.addDisplayHandler(new NavixDisplayHandler(this, tabbedPane, cefApp));
         cefClient.addDownloadHandler(new NavixDownloadHandler());
-        cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, this));
+        cefClient.addFocusHandler(new NavixFocusHandler(this));
+        cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, this, browserGlassPane));
     }
 
     private void addListeners() {
@@ -117,6 +130,16 @@ public class BrowserWindow extends JFrame {
                 }
             }
         });
+        browserAddressField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (!browserIsInFocus) return;
+                browserIsInFocus = false;
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+                browserAddressField.requestFocusInWindow();
+            }
+        });
+
         browserAddressField.setFont(new JLabel().getFont());
 
         backwardNav.setEnabled(false);

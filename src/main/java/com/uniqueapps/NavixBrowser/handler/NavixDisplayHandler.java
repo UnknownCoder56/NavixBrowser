@@ -2,19 +2,15 @@ package com.uniqueapps.NavixBrowser.handler;
 
 import com.uniqueapps.NavixBrowser.BrowserTabbedPane;
 import org.cef.CefApp;
-import org.cef.CefSettings;
 import org.cef.browser.CefBrowser;
-import org.cef.browser.CefFrame;
-import org.cef.handler.CefDisplayHandler;
+import org.cef.handler.CefDisplayHandlerAdapter;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class NavixDisplayHandler implements CefDisplayHandler {
+public class NavixDisplayHandler extends CefDisplayHandlerAdapter {
 
     JFrame windowFrame;
     BrowserTabbedPane tabbedPane;
@@ -27,12 +23,8 @@ public class NavixDisplayHandler implements CefDisplayHandler {
     }
 
     @Override
-    public void onAddressChange(CefBrowser cefBrowser, CefFrame cefFrame, String s) {
-
-    }
-
-    @Override
     public void onTitleChange(CefBrowser cefBrowser, String newTitle) {
+        super.onTitleChange(cefBrowser, newTitle);
         JPanel tabPanel = new JPanel();
         JLabel tabInfoLabel = new JLabel(newTitle.length() > 10 ? newTitle.substring(0, 7) + "..." : newTitle);
         try {
@@ -49,14 +41,6 @@ public class NavixDisplayHandler implements CefDisplayHandler {
                 windowFrame.setVisible(false);
                 cefApp.dispose();
                 windowFrame.dispose();
-                System.out.println("Waiting for 5 seconds before exiting...");
-                var closeTask = new TimerTask() {
-                    @Override
-                    public void run() {
-                        System.exit(0);
-                    }
-                };
-                new Timer().schedule(closeTask, 5000L);
             }
         });
         tabPanel.add(closeTabButton);
@@ -66,25 +50,5 @@ public class NavixDisplayHandler implements CefDisplayHandler {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean onTooltip(CefBrowser cefBrowser, String s) {
-        return false;
-    }
-
-    @Override
-    public void onStatusMessage(CefBrowser cefBrowser, String s) {
-
-    }
-
-    @Override
-    public boolean onConsoleMessage(CefBrowser cefBrowser, CefSettings.LogSeverity logSeverity, String s, String s1, int i) {
-        return false;
-    }
-
-    @Override
-    public boolean onCursorChange(CefBrowser cefBrowser, int i) {
-        return false;
     }
 }
