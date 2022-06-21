@@ -12,14 +12,11 @@ public class NavixLoadHandler extends CefLoadHandlerAdapter {
 
     JButton forwardNav, backwardNav;
     JFrame windowFrame;
-    JPanel glassPane;
 
-    public NavixLoadHandler(JButton forwardNav, JButton backwardNav, JFrame windowFrame, JPanel glassPane) {
+    public NavixLoadHandler(JButton forwardNav, JButton backwardNav, JFrame windowFrame) {
         this.forwardNav = forwardNav;
         this.backwardNav = backwardNav;
         this.windowFrame = windowFrame;
-        this.glassPane = glassPane;
-        this.windowFrame.setGlassPane(this.glassPane);
     }
 
     @Override
@@ -32,17 +29,12 @@ public class NavixLoadHandler extends CefLoadHandlerAdapter {
     @Override
     public void onLoadStart(CefBrowser cefBrowser, CefFrame cefFrame, CefRequest.TransitionType transitionType) {
         super.onLoadStart(cefBrowser, cefFrame, transitionType);
-        windowFrame.setEnabled(false);
-        glassPane.setVisible(true);
     }
 
     @Override
     public void onLoadEnd(CefBrowser cefBrowser, CefFrame cefFrame, int i) {
         super.onLoadEnd(cefBrowser, cefFrame, i);
-        windowFrame.setEnabled(true);
-        windowFrame.setResizable(true);
         windowFrame.setTitle(cefBrowser.getURL() + " - Navix");
-        glassPane.setVisible(false);
     }
 
     @Override

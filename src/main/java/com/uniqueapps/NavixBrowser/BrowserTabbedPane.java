@@ -1,6 +1,5 @@
 package com.uniqueapps.NavixBrowser;
 
-import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.browser.CefBrowser;
 
@@ -18,43 +17,16 @@ public class BrowserTabbedPane extends JTabbedPane {
     public boolean workingOnTabs = false;
     public Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
     private final BufferedImage newTabFavicon = ImageIO.read(new URL("https://www.google.com/s2/favicons?domain=google.com"));
-    private final JFrame windowFrame;
-    private final CefApp cefApp;
 
-    public BrowserTabbedPane(JFrame windowFrame, CefApp cefApp) throws IOException {
-        this.windowFrame = windowFrame;
-        this.cefApp = cefApp;
+    public BrowserTabbedPane() throws IOException {
+
     }
 
     public void addBrowserTab(CefClient cefClient, String startURL, boolean useOSR, boolean isTransparent) {
         workingOnTabs = true;
         var cefBrowser = cefClient.createBrowser(startURL, useOSR, isTransparent);
         browserComponentMap.put(cefBrowser.getUIComponent(), cefBrowser);
-        try {
-            if (getTabCount() > 1) {
-                removeTabAt(getTabCount() - 1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         addTab("New Tab", new ImageIcon(newTabFavicon), cefBrowser.getUIComponent(), cefBrowser.getURL());
-        addTab("+", null);
-        JPanel tabPanel = new JPanel();
-        tabPanel.add(new JLabel("New Tab"));
-        JButton closeTabButton = new JButton("X");
-        int thisIndex = getTabCount() - 2;
-        closeTabButton.addActionListener(l -> {
-            if (getTabCount() > 2) {
-                removeBrowserTab(thisIndex);
-            } else {
-                windowFrame.setVisible(false);
-                cefApp.dispose();
-                windowFrame.dispose();
-            }
-        });
-        tabPanel.add(closeTabButton);
-        setTabComponentAt(getTabCount() - 2, tabPanel);
-        setSelectedIndex(getTabCount() - 2);
         workingOnTabs = false;
     }
 
@@ -62,14 +34,6 @@ public class BrowserTabbedPane extends JTabbedPane {
         workingOnTabs = true;
         browserComponentMap.remove(browser.getUIComponent());
         removeTabAt(indexOfComponent(browser.getUIComponent()));
-        workingOnTabs = false;
-    }
-
-    public void removeBrowserTab(int index) {
-        workingOnTabs = true;
-        browserComponentMap.remove(browserComponentMap.keySet().stream().toList().get(index));
-        removeTabAt(index);
-        setSelectedIndex(getTabCount() - 2);
         workingOnTabs = false;
     }
 

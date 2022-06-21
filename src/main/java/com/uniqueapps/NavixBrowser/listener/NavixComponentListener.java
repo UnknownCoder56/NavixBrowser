@@ -1,7 +1,5 @@
 package com.uniqueapps.NavixBrowser.listener;
 
-import org.cef.OS;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -19,9 +17,6 @@ public class NavixComponentListener extends ComponentAdapter {
 
     @Override
     public void componentResized(ComponentEvent componentEvent) {
-        if (OS.isLinux()) {
-            windowFrame.getContentPane().remove(tabbedPane);
-            windowFrame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
-        }
+        windowFrame.add(tabbedPane, BorderLayout.CENTER);
     }
 }

@@ -33,19 +33,11 @@ public class BrowserWindow extends JFrame {
     private final JButton forwardNav;
     private final JButton backwardNav;
     private final JButton reloadButton;
+    private final JButton addTabButton;
     private final BrowserTabbedPane tabbedPane;
     public boolean browserIsInFocus = false;
-    private final JPanel browserGlassPane = new JPanel() {
-        {
-            setOpaque(false);
-        }
-        @Override
-        protected void paintComponent(Graphics g) {
 
-        }
-    };
-
-    BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) throws IOException {
+    BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) {
         CefApp.addAppHandler(new NavixAppHandler(null));
         CefApp.startup(new String[]{
                 "--disable-features=IsolateOrigins,site-per-process",
@@ -62,7 +54,17 @@ public class BrowserWindow extends JFrame {
         cefApp = CefApp.getInstance(cefSettings);
         cefClient = cefApp.createClient();
 
-        tabbedPane = new BrowserTabbedPane(this, cefApp);
+        try {
+            setIconImage(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/pages/navix.png"))));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            tabbedPane = new BrowserTabbedPane();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         browserAddressField = new JTextField(startURL, 100) {
             @Override
@@ -80,24 +82,11 @@ public class BrowserWindow extends JFrame {
         backwardNav = new JButton();
         forwardNav = new JButton();
         reloadButton = new JButton();
+        addTabButton = new JButton();
 
         addCefHandlers();
         addListeners();
-        prepareNavBar();
-
-        tabbedPane.addChangeListener(l -> {
-            if (!tabbedPane.workingOnTabs) {
-                if (tabbedPane.getTabCount() > 2) {
-                    if (tabbedPane.getSelectedIndex() == tabbedPane.getTabCount() - 1) {
-                        tabbedPane.addBrowserTab(cefClient, startURL, useOSR, isTransparent);
-                    }
-                } else {
-                    if (tabbedPane.getSelectedIndex() == 1) {
-                        tabbedPane.addBrowserTab(cefClient, startURL, useOSR, isTransparent);
-                    }
-                }
-            }
-        });
+        prepareNavBar(startURL, useOSR, isTransparent);
 
         tabbedPane.addBrowserTab(cefClient, startURL, useOSR, isTransparent);
     }
@@ -107,7 +96,7 @@ public class BrowserWindow extends JFrame {
         cefClient.addDisplayHandler(new NavixDisplayHandler(this, tabbedPane, cefApp));
         cefClient.addDownloadHandler(new NavixDownloadHandler());
         cefClient.addFocusHandler(new NavixFocusHandler(this));
-        cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, this, browserGlassPane));
+        cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, this));
     }
 
     private void addListeners() {
@@ -116,7 +105,7 @@ public class BrowserWindow extends JFrame {
         addWindowListener(new NavixWindowListener(this, cefApp));
     }
 
-    private void prepareNavBar() {
+    private void prepareNavBar(String startURL, boolean useOSR, boolean isTransparent) {
         browserAddressField.addActionListener(l -> {
             String query = browserAddressField.getText();
             try {
@@ -148,14 +137,17 @@ public class BrowserWindow extends JFrame {
         backwardNav.setBorder(new EmptyBorder(0, 0, 0, 0));
         forwardNav.setBorder(new EmptyBorder(0, 0, 0, 0));
         reloadButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+        addTabButton.setBorder(new EmptyBorder(0, 0, 0, 0));
         backwardNav.setBackground(this.getBackground());
         forwardNav.setBackground(this.getBackground());
         reloadButton.setBackground(this.getBackground());
+        addTabButton.setBackground(this.getBackground());
 
         try {
-            backwardNav.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/left-chevron.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
-            forwardNav.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/right-chevron.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
-            reloadButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/reload.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
+            backwardNav.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/left-chevron.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
+            forwardNav.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/right-chevron.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
+            reloadButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/reload.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
+            addTabButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/add-button.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -171,6 +163,7 @@ public class BrowserWindow extends JFrame {
             }
         });
         reloadButton.addActionListener(l -> tabbedPane.getSelectedBrowser().loadURL(tabbedPane.getSelectedBrowser().getURL()));
+        addTabButton.addActionListener(l -> tabbedPane.addBrowserTab(cefClient, startURL, useOSR, isTransparent));
 
         JPanel navBar = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -189,11 +182,16 @@ public class BrowserWindow extends JFrame {
 
         gbc.gridx = 2;
         gbc.weightx = 0.1;
+        gbc.weighty = 50;
         navBar.add(reloadButton, gbc);
 
         gbc.gridx = 3;
         gbc.weightx = 50;
         navBar.add(browserAddressField, gbc);
+
+        gbc.gridx = 4;
+        gbc.weightx = 0.1;
+        navBar.add(addTabButton, gbc);
 
         getContentPane().add(navBar, BorderLayout.NORTH);
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
