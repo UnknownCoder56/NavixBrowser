@@ -18,15 +18,14 @@ public class NavixSchemeHandler extends CefResourceHandlerAdapter {
     public boolean processRequest(CefRequest cefRequest, CefCallback cefCallback) {
         String action = cefRequest.getURL();
         switch (action) {
-            case "home" -> {
+            case "home":
 
-            }
-            case "about" -> {
 
-            }
-            case "whats-new" -> {
+            case "about":
 
-            }
+
+            case "whats-new":
+
         }
         return false;
     }

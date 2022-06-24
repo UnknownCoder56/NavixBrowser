@@ -1,6 +1,7 @@
 package com.uniqueapps.NavixBrowser;
 
-import org.cef.CefClient;
+import com.uniqueapps.NavixBrowser.handler.*;
+import org.cef.CefApp;
 import org.cef.browser.CefBrowser;
 
 import javax.imageio.ImageIO;
@@ -14,16 +15,26 @@ import java.util.Map;
 
 public class BrowserTabbedPane extends JTabbedPane {
 
+    BrowserWindow windowFrame;
+    JButton forwardNav, backwardNav;
     public boolean workingOnTabs = false;
     public Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
     private final BufferedImage newTabFavicon = ImageIO.read(new URL("https://www.google.com/s2/favicons?domain=google.com"));
 
-    public BrowserTabbedPane() throws IOException {
-
+    public BrowserTabbedPane(BrowserWindow windowFrame, JButton forwardNav, JButton backwardNav) throws IOException {
+        this.windowFrame = windowFrame;
+        this.forwardNav = forwardNav;
+        this.backwardNav = backwardNav;
     }
 
-    public void addBrowserTab(CefClient cefClient, String startURL, boolean useOSR, boolean isTransparent) {
+    public void addBrowserTab(CefApp cefApp, String startURL, boolean useOSR, boolean isTransparent) {
         workingOnTabs = true;
+        var cefClient = cefApp.createClient();
+        cefClient.addDialogHandler(new NavixDialogHandler(windowFrame));
+        cefClient.addDisplayHandler(new NavixDisplayHandler(windowFrame, this, cefApp));
+        cefClient.addDownloadHandler(new NavixDownloadHandler());
+        cefClient.addFocusHandler(new NavixFocusHandler(windowFrame));
+        cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, windowFrame));
         var cefBrowser = cefClient.createBrowser(startURL, useOSR, isTransparent);
         browserComponentMap.put(cefBrowser.getUIComponent(), cefBrowser);
         addTab("New Tab", new ImageIcon(newTabFavicon), cefBrowser.getUIComponent(), cefBrowser.getURL());

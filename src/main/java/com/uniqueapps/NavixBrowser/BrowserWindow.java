@@ -16,16 +16,13 @@ import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serial;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class BrowserWindow extends JFrame {
 
-    @Serial
     private static final long serialVersionUID = -3658310837225120769L;
     private final CefApp cefApp;
     private final CefClient cefClient;
@@ -38,6 +35,12 @@ public class BrowserWindow extends JFrame {
     public boolean browserIsInFocus = false;
 
     BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) {
+        File libPath = new File(".", "runtime");
+        try {
+            addLibraryPath(libPath.getAbsolutePath());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         CefApp.addAppHandler(new NavixAppHandler(null));
         CefApp.startup(new String[]{
                 "--disable-features=IsolateOrigins,site-per-process",
@@ -60,8 +63,13 @@ public class BrowserWindow extends JFrame {
             throw new RuntimeException(e);
         }
 
+        backwardNav = new JButton();
+        forwardNav = new JButton();
+        reloadButton = new JButton();
+        addTabButton = new JButton();
+
         try {
-            tabbedPane = new BrowserTabbedPane();
+            tabbedPane = new BrowserTabbedPane(this, forwardNav, backwardNav);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,16 +87,11 @@ public class BrowserWindow extends JFrame {
             }
         };
 
-        backwardNav = new JButton();
-        forwardNav = new JButton();
-        reloadButton = new JButton();
-        addTabButton = new JButton();
-
         addCefHandlers();
         addListeners();
         prepareNavBar(startURL, useOSR, isTransparent);
 
-        tabbedPane.addBrowserTab(cefClient, startURL, useOSR, isTransparent);
+        tabbedPane.addBrowserTab(cefApp, startURL, useOSR, isTransparent);
     }
 
     private void addCefHandlers() {
@@ -163,7 +166,7 @@ public class BrowserWindow extends JFrame {
             }
         });
         reloadButton.addActionListener(l -> tabbedPane.getSelectedBrowser().loadURL(tabbedPane.getSelectedBrowser().getURL()));
-        addTabButton.addActionListener(l -> tabbedPane.addBrowserTab(cefClient, startURL, useOSR, isTransparent));
+        addTabButton.addActionListener(l -> tabbedPane.addBrowserTab(cefApp, startURL, useOSR, isTransparent));
 
         JPanel navBar = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -195,5 +198,29 @@ public class BrowserWindow extends JFrame {
 
         getContentPane().add(navBar, BorderLayout.NORTH);
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private void addLibraryPath(String path) throws NoSuchFieldException, IllegalAccessException {
+        String libPath = System.getProperty("java.library.path");
+        String newPath;
+
+        if (libPath == null || libPath.isEmpty()) {
+            newPath = path;
+        } else {
+            newPath = path + File.pathSeparator + libPath;
+        }
+
+        System.setProperty("java.library.path", newPath);
+
+        Field field = ClassLoader.class.getDeclaredField("sys_paths");
+        field.setAccessible(true);
+
+        // Create override for sys_paths
+        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        java.util.List<String> newSysPaths = new ArrayList<>();
+        newSysPaths.add(path);
+        newSysPaths.addAll(Arrays.asList((String[])field.get(classLoader)));
+
+        field.set(classLoader, newSysPaths.toArray(new String[0]));
     }
 }

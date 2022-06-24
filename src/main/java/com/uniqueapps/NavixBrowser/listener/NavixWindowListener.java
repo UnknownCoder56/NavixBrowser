@@ -5,8 +5,6 @@ import org.cef.CefApp;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class NavixWindowListener extends WindowAdapter {
 
