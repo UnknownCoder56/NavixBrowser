@@ -161,14 +161,27 @@ ul.nav > li > a {
     </div>
 </div>
 <script type="text/javascript">
+
         document.getElementById('SearchField').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 search(document.getElementById("SearchField").value);
             }
         });
-        async function search(value) {
 
+        function search(value) {
+            var query = document.getElementById('SearchField').value;
+            if (isValidUrl(query)) {
+                window.location.href = query;
+            } else {
+                window.location.href = "https://google.com/search?q=" + query;
+            }
         };
+
+        function isValidUrl(_string) {
+            const matchpattern = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/gm;
+            return matchpattern.test(_string);
+        }
+        
 </script>
 </body>
 </html>
