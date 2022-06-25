@@ -58,7 +58,7 @@ public class NavixDisplayHandler extends CefDisplayHandlerAdapter {
             }
             newTitle = newTitleBuilder.toString();
         }
-        JPanel tabPanel = new JPanel(new BorderLayout());
+        JPanel tabPanel = new JPanel(new BorderLayout(4, 4));
         JLabel tabInfoLabel = new JLabel(newTitle);
         try {
             tabInfoLabel.setIcon(new ImageIcon(ImageIO.read(new URL("https://www.google.com/s2/favicons?domain=" + cefBrowser.getURL()))));
