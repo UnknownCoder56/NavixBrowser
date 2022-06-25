@@ -22,6 +22,7 @@
         ]
 
         function setBackgroundImage() {
+            document.documentElement.style.backgroundSize = "contain";
             document.documentElement.style.backgroundImage = ImgAPIs[Math.floor(Math.random() * ImgAPIs.length)];
         }
 
