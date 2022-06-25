@@ -22,7 +22,7 @@
         ]
 
         function setBackgroundImage() {
-            document.documentElement.style.backgroundSize = "contain";
+            document.documentElement.style.backgroundSize = "auto";
             document.documentElement.style.backgroundImage = ImgAPIs[Math.floor(Math.random() * ImgAPIs.length)];
         }
 
@@ -174,7 +174,7 @@ ul.nav > li > a {
             if (isValidUrl(query)) {
                 window.location.href = query;
             } else {
-                window.location.href = "https://google.com/search?q=" + query;
+                window.location.href = "https://slsearch.cf/search?q=" + query;
             }
         };
 

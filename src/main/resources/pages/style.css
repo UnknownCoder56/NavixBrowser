@@ -3,7 +3,7 @@ html {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-family: 'Segoe UI Light', Tahoma, sans-serif;
 }
 
 /*#checkboxes {
@@ -87,10 +87,60 @@ a:hover {
 .SLBrIcon {
     transition: transform .5s ease-in-out;
 }
-
 .SLBrIcon:hover {
     transform: rotate(180deg);
 }
+
+.Acrylic {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, .5);
+}
+/*.Acrylic {
+    backdrop-filter: blur(25px);
+    text-align: center;
+    width: 300px;
+    height: 40px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    padding: 0 10px;
+    border-radius: 20px;
+    background-color: var(rgba(255, 255, 255, 0.6));
+    transition: outline 0.1s var(ease), width 0.2s var(ease);
+    box-shadow: #00000030 0px 0px 8px 0px;
+    color: var(rgb(0, 0, 0));
+}*/
+/*.Acrylic {
+    background-blend-mode: exclusion;
+    -webkit-filter: blur(1px);
+    filter: blur(1px);
+    background-color: rgba(255,255,255,.1);
+    z-index: -1000000;
+}*/
+/*.Acrylic {
+    backdrop-filter: blur(25px);
+}*/
+
+/*.Arcylic {
+    z-index: -1000000;
+    background-size: 100% 100%;
+    -webkit-filter: blur(60px);
+    filter: blur(60px);
+    transform: scale(3);
+    transition: left 0.2s ease, top 0.2s ease, opacity 0.2s ease;
+    background-blend-mode: exclusion;
+    background-color: rgba(#fff, .2);
+}*/
+
+/*.Acrylic::before {
+    background-blend-mode: exclusion;
+    -webkit-filter: blur(1px);
+    filter: blur(1px);
+}
+
+.Acrylic::after {
+    background-color: rgba(#fff, .2);
+}*/
 
 .SearchInput {
     display: flex;
@@ -102,6 +152,11 @@ a:hover {
     width: 75vw;
     margin: 0 auto;
     max-width: 560px;
+    background: white;
+    /*background-blend-mode: exclusion;*/
+
+    /*-webkit-backdrop-filter: blur(20px) saturate(125%);
+    backdrop-filter: blur(20px) saturate(125%);*/
 }
 
 .SearchInput input {

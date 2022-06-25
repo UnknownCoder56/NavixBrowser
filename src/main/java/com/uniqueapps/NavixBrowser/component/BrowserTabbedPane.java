@@ -1,15 +1,12 @@
-package com.uniqueapps.NavixBrowser;
+package com.uniqueapps.NavixBrowser.component;
 
 import com.uniqueapps.NavixBrowser.handler.*;
 import org.cef.CefApp;
 import org.cef.browser.CefBrowser;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,27 +14,36 @@ public class BrowserTabbedPane extends JTabbedPane {
 
     BrowserWindow windowFrame;
     JButton forwardNav, backwardNav;
+    RoundedTextField browserField;
     public boolean workingOnTabs = false;
     public Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
-    private final BufferedImage newTabFavicon = ImageIO.read(new URL("https://www.google.com/s2/favicons?domain=google.com"));
 
-    public BrowserTabbedPane(BrowserWindow windowFrame, JButton forwardNav, JButton backwardNav) throws IOException {
+    public BrowserTabbedPane(BrowserWindow windowFrame, JButton forwardNav, JButton backwardNav, RoundedTextField browserField) throws IOException {
         this.windowFrame = windowFrame;
         this.forwardNav = forwardNav;
         this.backwardNav = backwardNav;
+        this.browserField = browserField;
+        addChangeListener(l -> {
+            windowFrame.setTitle("Navix");
+            if (!getSelectedBrowser().getURL().contains("newtab.html")) {
+                browserField.setText(getSelectedBrowser().getURL());
+            } else {
+                browserField.setText("navix://home");
+            }
+        });
     }
 
     public void addBrowserTab(CefApp cefApp, String startURL, boolean useOSR, boolean isTransparent) {
         workingOnTabs = true;
         var cefClient = cefApp.createClient();
         cefClient.addDialogHandler(new NavixDialogHandler(windowFrame));
-        cefClient.addDisplayHandler(new NavixDisplayHandler(windowFrame, this, cefApp));
+        cefClient.addDisplayHandler(new NavixDisplayHandler(windowFrame, this, browserField, cefApp));
         cefClient.addDownloadHandler(new NavixDownloadHandler());
         cefClient.addFocusHandler(new NavixFocusHandler(windowFrame));
         cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, windowFrame));
         var cefBrowser = cefClient.createBrowser(startURL, useOSR, isTransparent);
         browserComponentMap.put(cefBrowser.getUIComponent(), cefBrowser);
-        addTab("New Tab", new ImageIcon(newTabFavicon), cefBrowser.getUIComponent(), cefBrowser.getURL());
+        addTab("New Tab", null, cefBrowser.getUIComponent(), cefBrowser.getURL());
         workingOnTabs = false;
     }
 

@@ -1,4 +1,4 @@
-package com.uniqueapps.NavixBrowser;
+package com.uniqueapps.NavixBrowser.component;
 
 import com.uniqueapps.NavixBrowser.handler.*;
 import com.uniqueapps.NavixBrowser.listener.NavixComponentListener;
@@ -16,17 +16,16 @@ import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.Objects;
 
 public class BrowserWindow extends JFrame {
 
     private static final long serialVersionUID = -3658310837225120769L;
     private final CefApp cefApp;
     private final CefClient cefClient;
-    private final JTextField browserAddressField;
+    private final RoundedTextField browserAddressField;
     private final JButton forwardNav;
     private final JButton backwardNav;
     private final JButton reloadButton;
@@ -34,13 +33,7 @@ public class BrowserWindow extends JFrame {
     private final BrowserTabbedPane tabbedPane;
     public boolean browserIsInFocus = false;
 
-    BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) {
-        File libPath = new File(".", "runtime");
-        try {
-            addLibraryPath(libPath.getAbsolutePath());
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    public BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) {
         CefApp.addAppHandler(new NavixAppHandler(null));
         CefApp.startup(new String[]{
                 "--disable-features=IsolateOrigins,site-per-process",
@@ -67,25 +60,13 @@ public class BrowserWindow extends JFrame {
         forwardNav = new JButton();
         reloadButton = new JButton();
         addTabButton = new JButton();
+        browserAddressField = new RoundedTextField(30);
 
         try {
-            tabbedPane = new BrowserTabbedPane(this, forwardNav, backwardNav);
+            tabbedPane = new BrowserTabbedPane(this, forwardNav, backwardNav, browserAddressField);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        browserAddressField = new JTextField(startURL, 100) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Map<RenderingHints.Key, Object> rh = new HashMap<>();
-                rh.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-                rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHints(rh);
-                super.paintComponent(g);
-            }
-        };
 
         addCefHandlers();
         addListeners();
@@ -96,7 +77,7 @@ public class BrowserWindow extends JFrame {
 
     private void addCefHandlers() {
         cefClient.addDialogHandler(new NavixDialogHandler(this));
-        cefClient.addDisplayHandler(new NavixDisplayHandler(this, tabbedPane, cefApp));
+        cefClient.addDisplayHandler(new NavixDisplayHandler(this, tabbedPane, browserAddressField, cefApp));
         cefClient.addDownloadHandler(new NavixDownloadHandler());
         cefClient.addFocusHandler(new NavixFocusHandler(this));
         cefClient.addLoadHandler(new NavixLoadHandler(forwardNav, backwardNav, this));
@@ -115,10 +96,10 @@ public class BrowserWindow extends JFrame {
                 new URL(query);
                 tabbedPane.getSelectedBrowser().loadURL(query);
             } catch (MalformedURLException e) {
-                if (query.contains(".")) {
+                if (query.contains(".") || query.contains("://")) {
                     tabbedPane.getSelectedBrowser().loadURL(query);
                 } else {
-                    tabbedPane.getSelectedBrowser().loadURL("https://google.com/search?q=" + query);
+                    tabbedPane.getSelectedBrowser().loadURL("https://slsearch.cf/search?q=" + query);
                 }
             }
         });
@@ -198,29 +179,5 @@ public class BrowserWindow extends JFrame {
 
         getContentPane().add(navBar, BorderLayout.NORTH);
         getContentPane().add(tabbedPane, BorderLayout.CENTER);
-    }
-
-    private void addLibraryPath(String path) throws NoSuchFieldException, IllegalAccessException {
-        String libPath = System.getProperty("java.library.path");
-        String newPath;
-
-        if (libPath == null || libPath.isEmpty()) {
-            newPath = path;
-        } else {
-            newPath = path + File.pathSeparator + libPath;
-        }
-
-        System.setProperty("java.library.path", newPath);
-
-        Field field = ClassLoader.class.getDeclaredField("sys_paths");
-        field.setAccessible(true);
-
-        // Create override for sys_paths
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        java.util.List<String> newSysPaths = new ArrayList<>();
-        newSysPaths.add(path);
-        newSysPaths.addAll(Arrays.asList((String[])field.get(classLoader)));
-
-        field.set(classLoader, newSysPaths.toArray(new String[0]));
     }
 }

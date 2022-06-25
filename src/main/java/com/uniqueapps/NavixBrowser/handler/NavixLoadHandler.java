@@ -4,7 +4,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
-import org.cef.network.CefRequest;
 
 import javax.swing.*;
 
@@ -24,17 +23,6 @@ public class NavixLoadHandler extends CefLoadHandlerAdapter {
         super.onLoadingStateChange(cefBrowser, b, b1, b2);
         forwardNav.setEnabled(cefBrowser.canGoForward());
         backwardNav.setEnabled(cefBrowser.canGoBack());
-    }
-
-    @Override
-    public void onLoadStart(CefBrowser cefBrowser, CefFrame cefFrame, CefRequest.TransitionType transitionType) {
-        super.onLoadStart(cefBrowser, cefFrame, transitionType);
-    }
-
-    @Override
-    public void onLoadEnd(CefBrowser cefBrowser, CefFrame cefFrame, int i) {
-        super.onLoadEnd(cefBrowser, cefFrame, i);
-        windowFrame.setTitle(cefBrowser.getURL() + " - Navix");
     }
 
     @Override

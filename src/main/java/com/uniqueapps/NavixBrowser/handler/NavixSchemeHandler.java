@@ -5,6 +5,8 @@ import org.cef.callback.CefCallback;
 import org.cef.handler.CefResourceHandlerAdapter;
 import org.cef.network.CefRequest;
 
+import java.io.File;
+
 public class NavixSchemeHandler extends CefResourceHandlerAdapter {
 
     public static final String scheme = "navix";
@@ -17,15 +19,10 @@ public class NavixSchemeHandler extends CefResourceHandlerAdapter {
     @Override
     public boolean processRequest(CefRequest cefRequest, CefCallback cefCallback) {
         String action = cefRequest.getURL();
-        switch (action) {
-            case "home":
-
-
-            case "about":
-
-
-            case "whats-new":
-
+        if (action.contains("home")) {
+            File resources = new File(".", "resources");
+            browser.loadURL("file://" + resources.getAbsolutePath() + "/newtab.html");
+            cefCallback.Continue();
         }
         return false;
     }

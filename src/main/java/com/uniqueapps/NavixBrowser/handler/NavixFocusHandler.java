@@ -1,6 +1,6 @@
 package com.uniqueapps.NavixBrowser.handler;
 
-import com.uniqueapps.NavixBrowser.BrowserWindow;
+import com.uniqueapps.NavixBrowser.component.BrowserWindow;
 import org.cef.browser.CefBrowser;
 import org.cef.handler.CefFocusHandlerAdapter;
 

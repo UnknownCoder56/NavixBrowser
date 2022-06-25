@@ -1,6 +1,6 @@
 package com.uniqueapps.NavixBrowser.listener;
 
-import com.uniqueapps.NavixBrowser.BrowserTabbedPane;
+import com.uniqueapps.NavixBrowser.component.BrowserTabbedPane;
 
 import javax.swing.*;
 import java.awt.*;

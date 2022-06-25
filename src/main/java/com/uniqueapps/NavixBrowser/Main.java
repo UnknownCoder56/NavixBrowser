@@ -1,6 +1,7 @@
 package com.uniqueapps.NavixBrowser;
 
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.uniqueapps.NavixBrowser.component.BrowserWindow;
 
 import javax.swing.*;
 
@@ -12,7 +13,7 @@ public class Main {
 		} catch (UnsupportedLookAndFeelException e) {
 			throw new RuntimeException(e);
 		}
-		var window = new BrowserWindow("https://www.google.com", false, false);
+		var window = new BrowserWindow("navix://home", false, false);
 		window.setSize(600, 400);
 		window.setTitle("Navix");
 		window.setVisible(true);
