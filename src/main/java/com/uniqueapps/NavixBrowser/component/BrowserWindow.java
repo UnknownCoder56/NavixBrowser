@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class BrowserWindow extends JFrame {
@@ -25,7 +27,8 @@ public class BrowserWindow extends JFrame {
     private static final long serialVersionUID = -3658310837225120769L;
     private final CefApp cefApp;
     private final CefClient cefClient;
-    private final RoundedTextField browserAddressField;
+    private final JTextField browserAddressField;
+    private final JButton homeButton;
     private final JButton forwardNav;
     private final JButton backwardNav;
     private final JButton reloadButton;
@@ -56,11 +59,23 @@ public class BrowserWindow extends JFrame {
             throw new RuntimeException(e);
         }
 
+        homeButton = new JButton();
         backwardNav = new JButton();
         forwardNav = new JButton();
         reloadButton = new JButton();
         addTabButton = new JButton();
-        browserAddressField = new RoundedTextField(30);
+        browserAddressField = new JTextField(100) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Map<RenderingHints.Key, Object> rh = new HashMap<>();
+                rh.put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+                rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHints(rh);
+                super.paintComponent(g2d);
+            }
+        };
 
         try {
             tabbedPane = new BrowserTabbedPane(this, forwardNav, backwardNav, browserAddressField);
@@ -113,29 +128,35 @@ public class BrowserWindow extends JFrame {
             }
         });
 
+        browserAddressField.setBorder(new RoundedBorder(Color.LIGHT_GRAY.darker(), 1, 28, 5));
+        browserAddressField.setBackground(this.getBackground());
         browserAddressField.setFont(new JLabel().getFont());
 
         backwardNav.setEnabled(false);
         forwardNav.setEnabled(false);
 
+        homeButton.setBorder(new EmptyBorder(0, 0, 0, 0));
         backwardNav.setBorder(new EmptyBorder(0, 0, 0, 0));
         forwardNav.setBorder(new EmptyBorder(0, 0, 0, 0));
         reloadButton.setBorder(new EmptyBorder(0, 0, 0, 0));
         addTabButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+        homeButton.setBackground(this.getBackground());
         backwardNav.setBackground(this.getBackground());
         forwardNav.setBackground(this.getBackground());
         reloadButton.setBackground(this.getBackground());
         addTabButton.setBackground(this.getBackground());
 
         try {
+            homeButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/home.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
             backwardNav.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/left-chevron.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
             forwardNav.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/right-chevron.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
             reloadButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/reload.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
-            addTabButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/add-button.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
+            addTabButton.setIcon(new ImageIcon(ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/images/add.png"))).getScaledInstance(30, 30, BufferedImage.SCALE_SMOOTH)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+        homeButton.addActionListener(l -> tabbedPane.getSelectedBrowser().loadURL("navix://home"));
         backwardNav.addActionListener(l -> {
             if (tabbedPane.getSelectedBrowser().canGoBack()) {
                 tabbedPane.getSelectedBrowser().goBack();
@@ -149,6 +170,9 @@ public class BrowserWindow extends JFrame {
         reloadButton.addActionListener(l -> tabbedPane.getSelectedBrowser().loadURL(tabbedPane.getSelectedBrowser().getURL()));
         addTabButton.addActionListener(l -> tabbedPane.addBrowserTab(cefApp, startURL, useOSR, isTransparent));
 
+        JSeparator separator = new JSeparator();
+        separator.setOrientation(JSeparator.VERTICAL);
+
         JPanel navBar = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -158,24 +182,33 @@ public class BrowserWindow extends JFrame {
 
         gbc.gridx = 0;
         gbc.weightx = 0.1;
-        navBar.add(backwardNav, gbc);
+        navBar.add(addTabButton, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.1;
-        navBar.add(forwardNav, gbc);
+        gbc.fill = GridBagConstraints.VERTICAL;
+        navBar.add(separator, gbc);
 
         gbc.gridx = 2;
         gbc.weightx = 0.1;
-        gbc.weighty = 50;
-        navBar.add(reloadButton, gbc);
+        navBar.add(backwardNav, gbc);
 
         gbc.gridx = 3;
-        gbc.weightx = 50;
-        navBar.add(browserAddressField, gbc);
+        gbc.weightx = 0.1;
+        navBar.add(forwardNav, gbc);
 
         gbc.gridx = 4;
         gbc.weightx = 0.1;
-        navBar.add(addTabButton, gbc);
+        navBar.add(reloadButton, gbc);
+
+        gbc.gridx = 5;
+        gbc.weightx = 0.1;
+        navBar.add(homeButton, gbc);
+
+        gbc.gridx = 6;
+        gbc.weightx = 50;
+        gbc.fill = GridBagConstraints.BOTH;
+        navBar.add(browserAddressField, gbc);
 
         getContentPane().add(navBar, BorderLayout.NORTH);
         getContentPane().add(tabbedPane, BorderLayout.CENTER);

@@ -4,6 +4,8 @@ plugins {
     id 'org.beryx.jlink' version '2.25.0'
 }
 
+applicationDefaultJvmArgs = ["-Djava.library.path=runtime/"]
+
 group 'org.uniqueapps'
 version '1.0-SNAPSHOT'
 

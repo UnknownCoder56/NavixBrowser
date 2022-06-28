@@ -1,6 +1,6 @@
 package com.uniqueapps.NavixBrowser.handler;
 
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import org.apache.tika.Tika;
 import org.cef.browser.CefBrowser;
 import org.cef.callback.CefFileDialogCallback;
@@ -93,7 +93,7 @@ public class NavixDialogHandler implements CefDialogHandler {
         }
 
         try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(new FlatDarkLaf());
         } catch (UnsupportedLookAndFeelException e) {
             throw new RuntimeException(e);
         }
