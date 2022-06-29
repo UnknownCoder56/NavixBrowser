@@ -1,6 +1,5 @@
 package com.uniqueapps.NavixBrowser.handler;
 
-import com.formdev.flatlaf.FlatDarkLaf;
 import org.apache.tika.Tika;
 import org.cef.browser.CefBrowser;
 import org.cef.callback.CefFileDialogCallback;
@@ -26,12 +25,6 @@ public class NavixDialogHandler implements CefDialogHandler {
 
     @Override
     public boolean onFileDialog(CefBrowser cefBrowser, FileDialogMode fileDialogMode, String title, String defaultFilePath, Vector<String> acceptFilters, int selectedAcceptFilter, CefFileDialogCallback cefFileDialogCallback) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
-                 IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
         JFileChooser chooser = new JFileChooser();
         boolean success = false;
         File targetFile = new File(defaultFilePath);
@@ -90,12 +83,6 @@ public class NavixDialogHandler implements CefDialogHandler {
                 cefFileDialogCallback.Continue(0, new Vector<>(List.of(new String[]{chooser.getSelectedFile().getAbsolutePath()})));
                 success = true;
             }
-        }
-
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            throw new RuntimeException(e);
         }
 
         if (!success) {

@@ -7,15 +7,18 @@ import org.cef.browser.CefBrowser;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.uniqueapps.NavixBrowser.handler.NavixDisplayHandler.closeImage;
+import java.util.Objects;
 
 public class BrowserTabbedPane extends JTabbedPane {
 
@@ -23,14 +26,41 @@ public class BrowserTabbedPane extends JTabbedPane {
     JButton forwardNav, backwardNav;
     JTextField browserField;
     public Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
+    private static final ImageIcon closeImage;
+    private static final Color cornflowerBlue = new Color(100, 149, 237);
+
+    static {
+        try {
+            closeImage = new ImageIcon(ImageIO.read(Objects.requireNonNull(BrowserTabbedPane.class.getResourceAsStream("/images/cross.png"))).getScaledInstance(20, 20, BufferedImage.SCALE_SMOOTH));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public BrowserTabbedPane(BrowserWindow windowFrame, JButton forwardNav, JButton backwardNav, JTextField browserField) throws IOException {
         this.windowFrame = windowFrame;
         this.forwardNav = forwardNav;
         this.backwardNav = backwardNav;
         this.browserField = browserField;
+        setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        setUI(new BasicTabbedPaneUI() {
+            final Insets insets = new Insets(0, 0, 0, 0);
+            @Override
+            protected Insets getTabInsets(int tabPlacement, int tabIndex) {
+                return insets;
+            }
+            @Override
+            protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
+            }
+        });
         addChangeListener(l -> {
             windowFrame.setTitle("Navix");
+            for (int i = 0; i < getTabCount(); i++) {
+                Component c = getTabComponentAt(i);
+                if (c != null) {
+                    c.setBackground(getSelectedIndex() == i ? cornflowerBlue : cornflowerBlue.darker());
+                }
+            }
             if (!getSelectedBrowser().getURL().contains("newtab.html")) {
                 browserField.setText(getSelectedBrowser().getURL());
             } else {
@@ -49,7 +79,8 @@ public class BrowserTabbedPane extends JTabbedPane {
         var cefBrowser = cefClient.createBrowser(startURL, useOSR, isTransparent);
         browserComponentMap.put(cefBrowser.getUIComponent(), cefBrowser);
         addTab("New Tab", null, cefBrowser.getUIComponent(), cefBrowser.getURL());
-        setTabComponentAt(getTabCount() - 1, generateTabPanel(windowFrame, this, cefApp, cefBrowser, "New Tab"));
+        setTabComponentAt(getTabCount() - 1, generateTabPanel(windowFrame, this, cefApp, cefBrowser, "New Tab", true));
+        setSelectedIndex(getTabCount() - 1);
     }
 
     public void removeBrowserTab(CefBrowser browser) {
@@ -73,25 +104,9 @@ public class BrowserTabbedPane extends JTabbedPane {
         g2d.dispose();
     }
 
-    public static JPanel generateTabPanel(BrowserWindow windowFrame, BrowserTabbedPane tabbedPane, CefApp cefApp, CefBrowser cefBrowser, String newTitle) {
+    public static JPanel generateTabPanel(BrowserWindow windowFrame, BrowserTabbedPane tabbedPane, CefApp cefApp, CefBrowser cefBrowser, String newTitle, boolean highlightTab) {
         if (newTitle.length() > 15) {
             newTitle = newTitle.substring(0, 12) + "...";
-        } else if (newTitle.length() < 15) {
-            StringBuilder newTitleBuilder = new StringBuilder(newTitle);
-            if ((15 - newTitle.length()) % 2 == 0) {
-                for (int i = 0; i == (15 - newTitleBuilder.length()) / 2; i++) {
-                    newTitleBuilder.append(" ");
-                    newTitleBuilder.insert(0, " ");
-                }
-            } else {
-                for (int i = 0; i == (15 - newTitleBuilder.length()) / 2; i++) {
-                    newTitleBuilder.append(" ");
-                }
-                for (int i = 0; i == ((15 - newTitleBuilder.length()) / 2) + 1; i++) {
-                    newTitleBuilder.insert(0, " ");
-                }
-            }
-            newTitle = newTitleBuilder.toString();
         }
         JPanel tabPanel = new JPanel(new BorderLayout(4, 4)) {
             @Override
@@ -106,20 +121,29 @@ public class BrowserTabbedPane extends JTabbedPane {
                 g2d.fill(panelArea);
             }
         };
-        Color cornflowerBlue = new Color(100, 149, 237).darker();
-        tabPanel.setBackground(cornflowerBlue);
+        tabPanel.setBackground(highlightTab ? cornflowerBlue : cornflowerBlue.darker());
         JLabel tabInfoLabel = new JLabel(newTitle);
         tabInfoLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
         try {
             tabInfoLabel.setIcon(new ImageIcon(ImageIO.read(new URL("https://www.google.com/s2/favicons?domain=" + cefBrowser.getURL()))));
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Could not get favicon for: " + cefBrowser.getURL());
         }
         tabPanel.add(tabInfoLabel, BorderLayout.CENTER);
         JButton closeTabButton = new JButton();
         closeTabButton.setBorder(new EmptyBorder(5, 5, 5, 5));
         closeTabButton.setBackground(new Color(0x0, true));
         closeTabButton.setIcon(closeImage);
+        closeTabButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                closeTabButton.setBackground(new Color(0, 0, 0, 50));
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                closeTabButton.setBackground(new Color(0x0, true));
+            }
+        });
         closeTabButton.addActionListener(l -> {
             if (tabbedPane.getTabCount() > 1) {
                 tabbedPane.removeBrowserTab(cefBrowser);

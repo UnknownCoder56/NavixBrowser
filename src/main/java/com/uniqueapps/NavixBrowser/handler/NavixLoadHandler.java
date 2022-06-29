@@ -1,6 +1,5 @@
 package com.uniqueapps.NavixBrowser.handler;
 
-import com.formdev.flatlaf.FlatDarkLaf;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
@@ -28,15 +27,8 @@ public class NavixLoadHandler extends CefLoadHandlerAdapter {
     @Override
     public void onLoadError(CefBrowser cefBrowser, CefFrame cefFrame, ErrorCode errorCode, String s, String s1) {
         super.onLoadError(cefBrowser, cefFrame, errorCode, s, s1);
-        try {
-            if (errorCode.getCode() != -3) {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                JOptionPane.showMessageDialog(cefBrowser.getUIComponent(), "Failed to load " + cefBrowser.getURL() + " with error code " + errorCode.getCode() + "!", JOptionPane.MESSAGE_PROPERTY, JOptionPane.ERROR_MESSAGE);
-                UIManager.setLookAndFeel(new FlatDarkLaf());
-            }
-        } catch (UnsupportedLookAndFeelException | IllegalAccessException | InstantiationException |
-                 ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        if (errorCode.getCode() != -3) {
+            JOptionPane.showMessageDialog(cefBrowser.getUIComponent(), "Failed to load " + cefBrowser.getURL() + " with error code " + errorCode.getCode() + "!", JOptionPane.MESSAGE_PROPERTY, JOptionPane.ERROR_MESSAGE);
         }
     }
 }

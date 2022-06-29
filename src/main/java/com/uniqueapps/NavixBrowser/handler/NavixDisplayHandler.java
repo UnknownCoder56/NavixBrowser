@@ -7,11 +7,7 @@ import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefDisplayHandlerAdapter;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Objects;
 
 import static com.uniqueapps.NavixBrowser.component.BrowserTabbedPane.generateTabPanel;
 
@@ -21,15 +17,6 @@ public class NavixDisplayHandler extends CefDisplayHandlerAdapter {
     BrowserTabbedPane tabbedPane;
     JTextField browserField;
     CefApp cefApp;
-    public static final ImageIcon closeImage;
-
-    static {
-        try {
-            closeImage = new ImageIcon(ImageIO.read(Objects.requireNonNull(NavixDisplayHandler.class.getResourceAsStream("/images/cross.png"))).getScaledInstance(20, 20, BufferedImage.SCALE_SMOOTH));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public NavixDisplayHandler(BrowserWindow windowFrame, BrowserTabbedPane tabbedPane, JTextField browserField, CefApp cefApp) {
         this.windowFrame = windowFrame;
@@ -43,7 +30,11 @@ public class NavixDisplayHandler extends CefDisplayHandlerAdapter {
         super.onTitleChange(cefBrowser, newTitle);
 
         try {
-            tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(cefBrowser.getUIComponent()), generateTabPanel(windowFrame, tabbedPane, cefApp, cefBrowser, newTitle));
+            if (tabbedPane.getSelectedBrowser() == cefBrowser) {
+                tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(cefBrowser.getUIComponent()), generateTabPanel(windowFrame, tabbedPane, cefApp, cefBrowser, newTitle, true));
+            } else {
+                tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(cefBrowser.getUIComponent()), generateTabPanel(windowFrame, tabbedPane, cefApp, cefBrowser, newTitle, false));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
