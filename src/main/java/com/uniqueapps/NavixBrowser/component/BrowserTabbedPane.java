@@ -11,6 +11,7 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
@@ -148,7 +149,7 @@ public class BrowserTabbedPane extends JTabbedPane {
             if (tabbedPane.getTabCount() > 1) {
                 tabbedPane.removeBrowserTab(cefBrowser);
             } else {
-                windowFrame.setVisible(false);
+                windowFrame.dispatchEvent(new WindowEvent(windowFrame, WindowEvent.WINDOW_CLOSING));
                 cefApp.dispose();
                 windowFrame.dispose();
             }

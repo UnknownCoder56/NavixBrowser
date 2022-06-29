@@ -13,6 +13,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,10 +40,7 @@ public class BrowserWindow extends JFrame {
 
     public BrowserWindow(String startURL, boolean useOSR, boolean isTransparent) {
         CefApp.addAppHandler(new NavixAppHandler(null));
-        CefApp.startup(new String[]{
-                "--disable-features=IsolateOrigins,site-per-process",
-                "--disable-gpu",
-                "--disable-software-rasterizer"});
+        CefApp.startup(new String[]{});
 
         CefSettings cefSettings = new CefSettings();
         cefSettings.windowless_rendering_enabled = useOSR;
@@ -125,6 +124,12 @@ public class BrowserWindow extends JFrame {
                 browserIsInFocus = false;
                 KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
                 browserAddressField.requestFocusInWindow();
+            }
+        });
+        browserAddressField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                browserAddressField.selectAll();
             }
         });
 
