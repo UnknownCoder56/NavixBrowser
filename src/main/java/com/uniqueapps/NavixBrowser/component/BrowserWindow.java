@@ -27,7 +27,7 @@ import java.util.Objects;
 public class BrowserWindow extends JFrame {
 
     private static final long serialVersionUID = -3658310837225120769L;
-    private final CefApp cefApp;
+    protected final CefApp cefApp;
     private final CefClient cefClient;
     private final JTextField browserAddressField;
     private final JButton homeButton;
@@ -175,15 +175,18 @@ public class BrowserWindow extends JFrame {
         reloadButton.addActionListener(l -> tabbedPane.getSelectedBrowser().loadURL(tabbedPane.getSelectedBrowser().getURL()));
         addTabButton.addActionListener(l -> tabbedPane.addBrowserTab(cefApp, startURL, useOSR, isTransparent));
 
-        JSeparator separator = new JSeparator();
-        separator.setOrientation(JSeparator.VERTICAL);
+        JPanel separatorPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(Color.DARK_GRAY.brighter());
+                g.drawLine(getWidth() / 2, 3, getWidth() / 2, getHeight() - 3);
+            }
+        };
 
         JPanel navBar = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.ipadx = 3;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(5, 3, 8, 3);
 
         gbc.gridx = 0;
         gbc.weightx = 0.1;
@@ -191,8 +194,8 @@ public class BrowserWindow extends JFrame {
 
         gbc.gridx = 1;
         gbc.weightx = 0.1;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        navBar.add(separator, gbc);
+        gbc.fill = GridBagConstraints.BOTH;
+        navBar.add(separatorPanel, gbc);
 
         gbc.gridx = 2;
         gbc.weightx = 0.1;

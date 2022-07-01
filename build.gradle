@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'org.beryx.jlink' version '2.25.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 applicationDefaultJvmArgs = ["-Djava.library.path=runtime/"]
@@ -36,6 +37,7 @@ application {
     mainModule = "NavixBrowser.main"
     applicationName = "NavixBrowser"
     mainClassName = "com.uniqueapps.NavixBrowser.Main"
+    mainClass.set("com.uniqueapps.NavixBrowser.Main")
 }
 
 jlink {

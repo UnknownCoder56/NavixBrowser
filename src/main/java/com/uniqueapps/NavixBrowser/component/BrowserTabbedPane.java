@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
@@ -26,7 +27,7 @@ public class BrowserTabbedPane extends JTabbedPane {
     BrowserWindow windowFrame;
     JButton forwardNav, backwardNav;
     JTextField browserField;
-    public Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
+    public static Map<Component, CefBrowser> browserComponentMap = new HashMap<>();
     private static final ImageIcon closeImage;
     private static final Color cornflowerBlue = new Color(100, 149, 237);
 
@@ -52,6 +53,41 @@ public class BrowserTabbedPane extends JTabbedPane {
             }
             @Override
             protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
+            }
+        });
+        var tabbedPane = this;
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu popupMenu = new JPopupMenu() {
+                        @Override
+                        protected void paintComponent(Graphics g) {
+                            Graphics2D g2d = (Graphics2D) g;
+                            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                            super.paintComponent(g2d);
+                        }
+                    };
+
+                    JMenuItem copyLinkItem = new JMenuItem("Copy URL");
+                    copyLinkItem.addActionListener(l -> Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(browserComponentMap.get(tabbedPane.getComponentAt(tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY()))).getURL()), null));
+                    popupMenu.add(copyLinkItem);
+
+                    JMenuItem closeTabItem = new JMenuItem("Close tab");
+                    closeTabItem.addActionListener(l -> {
+                        if (tabbedPane.getTabCount() > 1) {
+                            tabbedPane.removeBrowserTab(browserComponentMap.get(tabbedPane.getComponentAt(tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY()))));
+                        } else {
+                            windowFrame.dispatchEvent(new WindowEvent(windowFrame, WindowEvent.WINDOW_CLOSING));
+                            windowFrame.cefApp.dispose();
+                            windowFrame.dispose();
+                        }
+                    });
+                    popupMenu.add(closeTabItem);
+
+                    popupMenu.show(tabbedPane, e.getX(), e.getY());
+                }
             }
         });
         addChangeListener(l -> {
